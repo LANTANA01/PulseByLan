@@ -44,7 +44,7 @@ export default function Home() {
       } else {
         setNews(articles);
       }
-    } catch (error: any) {
+    } catch (error: string) {
       console.error("AxiosError Details:", {
         message: error.message,
         code: error.code,
