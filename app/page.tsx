@@ -8,7 +8,11 @@ interface Article {
   title: string;
   url: string;
   publishedAt: string;
-  [key: string]: any;
+  source?: { id: string | null; name: string }; // Optional fields from NewsAPI
+  author?: string | null;
+  description?: string | null;
+  urlToImage?: string | null;
+  content?: string | null;
 }
 
 export default function Home() {
