@@ -44,18 +44,19 @@ export default function Home() {
       } else {
         setNews(articles);
       }
-    }catch (error) {
+    } catch (error) {
+      // Type narrowing for error
       if (error instanceof Error) {
-          console.error("AxiosError Details:", {
-              message: error.message,
-              code: 'code' in error ? error.code : undefined,
-          });
+        console.error("AxiosError Details:", {
+          message: error.message,
+          code: "code" in error ? (error as any).code : undefined, // AxiosError type assertion if needed
+        });
+        setError(`Failed to fetch news: ${error.message}`);
       } else {
-          console.error("Unknown error:", error);
+        console.error("Unknown error:", error);
+        setError("Failed to fetch news: An unknown error occurred.");
       }
-   };
-      setNews([]);
-      setError(`Failed to fetch news: ${error.message}`);
+      setNews([]); // Reset news on error
     }
   };
 
@@ -66,7 +67,9 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8">
       <div className="flex items-center space-x-2 mb-6">
-        <span className="text-3xl bg-gradient-to-r from-orange-500 via-pink-500 to-yellow-500 text-transparent bg-clip-text">🌸</span>
+        <span className="text-3xl bg-gradient-to-r from-orange-500 via-pink-500 to-yellow-500 text-transparent bg-clip-text">
+          🌸
+        </span>
         <h1 className="text-4xl font-bold text-gray-800">PulseByLan</h1>
       </div>
 
