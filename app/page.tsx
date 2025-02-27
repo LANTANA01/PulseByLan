@@ -3,12 +3,11 @@
 import { useState, ChangeEvent } from "react";
 import axios from "axios";
 
-// Define the shape of a NewsAPI article
 interface Article {
   title: string;
   url: string;
   publishedAt: string;
-  source?: { id: string | null; name: string }; // Optional fields from NewsAPI
+  source?: { id: string | null; name: string };
   author?: string | null;
   description?: string | null;
   urlToImage?: string | null;
@@ -29,26 +28,31 @@ export default function Home() {
     setError(null);
     try {
       const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
+      console.log("API Key in browser:", apiKey);
+      if (!apiKey) {
+        throw new Error("NEXT_PUBLIC_NEWS_API_KEY is not defined.");
+      }
+
       const response = await axios.get(
-        `https://newsapi.org/v2/everything?q=${topic}&apiKey=${apiKey}&sortBy=publishedAt`,
-        {
-          params: {
-            _t: new Date().getTime(),
-          },
-        }
-        
+        `https://newsapi.org/v2/everything?q=${topic}&apiKey=${apiKey}&sortBy=publishedAt`
       );
 
+      console.log("NewsAPI Response:", response.data);
       const articles: Article[] = response.data.articles;
       if (articles.length === 0) {
         setError("No articles found for this topic.");
       } else {
         setNews(articles);
       }
-    } catch (error) {
-      console.error("Error fetching news:", error);
+    } catch (error: any) {
+      console.error("AxiosError Details:", {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       setNews([]);
-      setError("Failed to fetch news. Please try again later.");
+      setError(`Failed to fetch news: ${error.message}`);
     }
   };
 
@@ -59,7 +63,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8">
       <div className="flex items-center space-x-2 mb-6">
-        {/* Placeholder Logo */}
         <span className="text-3xl bg-gradient-to-r from-orange-500 via-pink-500 to-yellow-500 text-transparent bg-clip-text">🌸</span>
         <h1 className="text-4xl font-bold text-gray-800">PulseByLan</h1>
       </div>
