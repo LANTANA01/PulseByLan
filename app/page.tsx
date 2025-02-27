@@ -44,13 +44,16 @@ export default function Home() {
       } else {
         setNews(articles);
       }
-    } catch (error) {
-      console.error("AxiosError Details:", {
-        message: error.message,
-        code: error.code,
-        status: error.response?.status,
-        data: error.response?.data
-      });
+    }catch (error) {
+      if (error instanceof Error) {
+          console.error("AxiosError Details:", {
+              message: error.message,
+              code: 'code' in error ? error.code : undefined,
+          });
+      } else {
+          console.error("Unknown error:", error);
+      }
+   };
       setNews([]);
       setError(`Failed to fetch news: ${error.message}`);
     }
