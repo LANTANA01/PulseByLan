@@ -28,7 +28,7 @@ export default function Home() {
 
     setError(null);
     try {
-      const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY || "53ba405be0c54878a0180c5989732008";
+      const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
       const response = await axios.get(
         `https://newsapi.org/v2/everything?q=${topic}&apiKey=${apiKey}&sortBy=publishedAt`,
         {
