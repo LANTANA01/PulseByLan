@@ -49,7 +49,7 @@ export default function Home() {
       if (error instanceof Error) {
         console.error("AxiosError Details:", {
           message: error.message,
-          code: "code" in error ? (error as any).code : undefined, // AxiosError type assertion if needed
+          code: "code" in error ? (error as { code?: string }).code : undefined, // AxiosError type assertion if needed
         });
         setError(`Failed to fetch news: ${error.message}`);
       } else {
