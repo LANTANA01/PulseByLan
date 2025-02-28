@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, ChangeEvent } from "react";
-import axios from "axios";
 
 interface Article {
   title: string;
@@ -18,6 +17,7 @@ export default function Home() {
   const [topic, setTopic] = useState<string>("");
   const [news, setNews] = useState<Article[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchNews = async () => {
     if (!topic) {
@@ -25,38 +25,31 @@ export default function Home() {
       return;
     }
 
+    setIsLoading(true);
     setError(null);
+    
     try {
-      const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY;
-      console.log("API Key in browser:", apiKey);
-      if (!apiKey) {
-        throw new Error("NEXT_PUBLIC_NEWS_API_KEY is not defined.");
+      // Call our own API route instead of the News API directly
+      const response = await fetch(`/api/news?topic=${encodeURIComponent(topic)}`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Error: ${response.status}`);
       }
-
-      const response = await axios.get(
-        `https://newsapi.org/v2/everything?q=${topic}&apiKey=${apiKey}&sortBy=publishedAt`
-      );
-
-      console.log("NewsAPI Response:", response.data);
-      const articles: Article[] = response.data.articles;
-      if (articles.length === 0) {
-        setError("No articles found for this topic.");
+      
+      const data = await response.json();
+      
+      if (data.articles && data.articles.length > 0) {
+        setNews(data.articles);
       } else {
-        setNews(articles);
+        setError("No articles found for this topic.");
       }
     } catch (error) {
-      // Type narrowing for error
-      if (error instanceof Error) {
-        console.error("AxiosError Details:", {
-          message: error.message,
-          code: "code" in error ? (error as { code?: string }).code : undefined, // AxiosError type assertion if needed
-        });
-        setError(`Failed to fetch news: ${error.message}`);
-      } else {
-        console.error("Unknown error:", error);
-        setError("Failed to fetch news: An unknown error occurred.");
-      }
+      console.error("Error:", error);
+      setError(`Failed to fetch news: ${error instanceof Error ? error.message : 'An unknown error occurred'}`);
       setNews([]); // Reset news on error
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -67,9 +60,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8">
       <div className="flex items-center space-x-2 mb-6">
-        <span className="text-3xl bg-gradient-to-r from-orange-500 via-pink-500 to-yellow-500 text-transparent bg-clip-text">
-          🌸
-        </span>
+        <span className="text-3xl">🌸</span>
         <h1 className="text-4xl font-bold text-gray-800">PulseByLan</h1>
       </div>
 
@@ -83,9 +74,10 @@ export default function Home() {
         />
         <button
           onClick={fetchNews}
-          className="p-3 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 transition-colors"
+          disabled={isLoading}
+          className="p-3 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 transition-colors disabled:bg-blue-400"
         >
-          Search
+          {isLoading ? "Loading..." : "Search"}
         </button>
       </div>
 
@@ -115,7 +107,7 @@ export default function Home() {
           </ul>
         ) : (
           <p className="text-gray-600 text-center">
-            No news yet. Enter a topic and click Search!
+            {isLoading ? "Fetching news..." : "No news yet. Enter a topic and click Search!"}
           </p>
         )}
       </div>
